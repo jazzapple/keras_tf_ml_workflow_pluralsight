@@ -14,27 +14,24 @@ After preparing features, scaling, train test val split:
 3. Compile model - define loss, optimizer, evaluation metrics
 e.g. 
 ```python
+from tensorflow import keras
+from tensorflow.keras import layers
+
+tf.keras.backend.clear_session() # Destroys the current TF graph session and creates a new one - use if using same Python kernel
+
 def build_and_compile_model():
+    model = tf.keras.Sequential([
+        layers.Dense(32, activation='relu', input_shape=[len(X_train.columns)]), # fully connected layer with 32 neurons
+        layers.Dropout(0.25)
+        layers.Dense(64, activation='relu'), 
+        layers.Dense(1) #output layer
+    ])
     
-    inputs = tf.keras.Input(shape=(x_train.shape[1],)) # define input layer
+    optimizer = tf.keras.optimizers.Adam(0.001) 
 
-     # every layer instance is a callable. Accepts inputs and returns a tensor
-    x = layers.Dense(16, activation='relu')(inputs) # fully connected layer
-
-    x = layers.Dropout(0.3)(x)
-
-    x = layers.Dense(8, activation='relu')(x)
-
-    predictions = layers.Dense(1, activation='sigmoid')(x) # final layer with 1 neuron with probability
-    
-    # instantiate model
-    model = tf.keras.Model(inputs=inputs, outputs=predictions)
-    
-    model.summary()
-    
-    model.compile(optimizer=tf.keras.optimizers.RMSprop(0.001), # adaptive learning optimizer. learning rate 0.001
-              loss=tf.keras.losses.BinaryCrossentropy(), # appropriate loss function for binary classification
-              metrics=['accuracy', 
+    model.compile(loss=tf.keras.losses.BinaryCrossentropy(), # appropriate loss function for binary classification,
+                  optimizer=optimizer,
+                  metrics=['accuracy', 
                        tf.keras.metrics.Precision(0.5), # 0.5 probability threshold
                        tf.keras.metrics.Recall(0.5),])
     return model
